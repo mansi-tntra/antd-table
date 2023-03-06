@@ -137,7 +137,7 @@ let component ={
               return editing ? (
                 <span>
                   <Typography.Link
-                    onClick={() => handleSave(record.kr)}
+                    onClick={() => handleSave(record.key)}
                     style={{
                       marginRight: 8,
                     }}
