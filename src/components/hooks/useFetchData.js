@@ -18,8 +18,10 @@ const useFetchData = ({
     data: [],
   });
   const { isLoading, data } = state;
+  console.log("🚀 ~ file: useFetchData.js:21 ~ isLoading:", isLoading)
   useEffect(() => {
-    if (apiCallCondition) {
+    if (true) {
+      console.log("🚀 ~ file: useFetchData.js:24 ~ useEffect ~ apiCallCondition:", apiCallCondition)
       setState({
         ...state,
         isLoading: true,

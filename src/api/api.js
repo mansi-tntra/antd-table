@@ -1,6 +1,12 @@
 import { get } from "../utility/client"
 
-export const getTableList =(body)=>{
-   console.log("body" , ...body)
-   return get({...body})
+
+
+export const getList  =(body)=>{
+   return get("/comments" , {...body})
 }
+
+export const getListing =(body)=>{
+   return get("/comments",{...body})
+}
+ 
