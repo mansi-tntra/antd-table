@@ -55,6 +55,8 @@ const AntTable = (props) => {
       handleEdit,
       handleSave,
       handleCancel,
+      handleSorting,
+      handleTableChange
     },
   ] = useTable({
     form,
@@ -78,13 +80,14 @@ const AntTable = (props) => {
     console.log("mmmm", data);
     return data;
   };
+ 
   const handle = (item) =>
     // console.log("item", item);
     item.map((item) => {
       console.log("item", item);
       return (
         <Column
-          key={item?.key}
+          key={item?.dataIndex}
           title={item?.title}
           dataIndex={item?.dataIndex}
           editable={item?.editable}
@@ -97,14 +100,11 @@ const AntTable = (props) => {
             title: item.title,
             editing: isEditing(record),
           })}
+          sorter={(item?.dataIndex === "id") || item?.dataIndex ==="name" ? true : false}
         />
       );
     });
 
-  const modifiedData = dataSource.map(({ ...item }) => ({
-    ...item,
-    key: item.id,
-  }));
 let component ={
     body:{
         cell : editableCell
@@ -113,13 +113,9 @@ let component ={
 
   return (
     <Form form={form} component={false}>
-      <Table components={component} dataSource={modifiedData} >
+      <Table components={component} dataSource={dataSource}  onChange={handleTableChange}>
         {handle(mergeColumn())}
-        {console.log(
-          "🚀 ~ file: table.js:70 ~ AntTable ~ handle(mergeColumn()):",
-          handle(mergeColumn())
-        )}
-
+      
         {
           <Column
             title="Actions"
@@ -137,7 +133,7 @@ let component ={
               return editing ? (
                 <span>
                   <Typography.Link
-                    onClick={() => handleSave(record.key)}
+                    onClick={() => handleSave(record.id)}
                     style={{
                       marginRight: 8,
                     }}

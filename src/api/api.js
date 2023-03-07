@@ -7,6 +7,6 @@ export const getList  =(body)=>{
 }
 
 export const getListing =(body)=>{
-   return get("/comments",{...body})
+   return get("/users",{...body})
 }
  

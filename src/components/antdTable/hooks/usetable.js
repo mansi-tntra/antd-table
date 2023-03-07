@@ -18,7 +18,7 @@ const useTable = (props) => {
   });
   const { rowData, columnData, body, editRowKey } = state;
   const [triggerList, setTriggerList] = useState(false);
-  
+
   const { dataSource } = useSelector((state) => ({
     dataSource: state?.table?.[rowReduxKey],
   }));
@@ -26,15 +26,15 @@ const useTable = (props) => {
   const dispatch = useDispatch();
 
   const isEditing = (record) => {
-    return record.key === editRowKey;
+    return record.id === editRowKey;
   };
   const listSuccess = (data) => {
     console.log("🚀 ~ file: usetable.js:17 ~ listSuccess ~ data:", data);
-    const modifiedData =  data.map(({body , ...item})=>({
+    const modifiedData = data.map(({ body, ...item }) => ({
       ...item,
-      key: item?.id,
-      message: body
-    }))
+      // id: id,
+      // message: body,
+    }));
     setState({
       ...state,
       rowData: [...modifiedData],
@@ -44,7 +44,7 @@ const useTable = (props) => {
     });
     const colArray = [];
     for (let [key, value] of Object.entries(modifiedData[0])) {
-      console.log(key, "mansi" , value);
+      console.log(key, "mansi", value);
       colArray.push({
         title: String(key).charAt(0).toUpperCase() + String(key).slice(1),
         dataIndex: key,
@@ -83,54 +83,146 @@ const useTable = (props) => {
 
     setState({
       ...state,
-      editRowKey: record.key,
+      editRowKey: record.id,
     });
   };
 
-  const handleSave =async (key) => {
-    console.log("record" , key)
+  const handleSave = async (key) => {
+    console.log("record", key);
     try {
-        const row = await form.validateFields();
-        const newData = [...dataSource];
-        console.log("🚀 ~ file: usetable.js:90 ~ handleSave ~ rowData:", dataSource)
-        console.log("🚀 ~ file: usetable.js:88 ~ handleSave ~ newData:", newData)
-        console.log("KKKK" , newData.findIndex((item)=>console.log(item.key===key ,"KKKK")))
-        const index = newData.findIndex((item) => key === item.key);
-        console.log("idex", index);
-        if (index > -1) {
-          const item = newData[index];
-          newData.splice(index, 1, {
-            ...item,
-            ...row
-          });
-         setState({
-           ...state,
-            rowData: newData,
-            editRowKey:""
-
-         })
-         dispatch(saveTableRows(rowReduxKey,[...newData]))
-        } else {
-          newData.push(row);
-          setState({
-            ...state,
-            rowData:newData,
-            editRowKey:""
-          })
-          dispatch(saveTableRows(rowReduxKey,[...newData]))
-        }
-      } catch (errInfo) {
-        console.log("Validate Failed:", errInfo);
+      const row = await form.validateFields();
+      const newData = [...dataSource];
+      console.log(
+        "🚀 ~ file: usetable.js:90 ~ handleSave ~ rowData:",
+        dataSource
+      );
+      console.log("🚀 ~ file: usetable.js:88 ~ handleSave ~ newData:", newData);
+      console.log(
+        "KKKK",
+        newData.findIndex((item) => console.log(item.key === key, "KKKK"))
+      );
+      const index = newData.findIndex((item) => key === item.id);
+      console.log("idex", index);
+      if (index > -1) {
+        const item = newData[index];
+        newData.splice(index, 1, {
+          ...item,
+          ...row,
+        });
+        setState({
+          ...state,
+          rowData: newData,
+          editRowKey: "",
+        });
+        dispatch(saveTableRows(rowReduxKey, [...newData]));
+      } else {
+        newData.push(row);
+        setState({
+          ...state,
+          rowData: newData,
+          editRowKey: "",
+        });
+        dispatch(saveTableRows(rowReduxKey, [...newData]));
       }
-    
+    } catch (errInfo) {
+      console.log("Validate Failed:", errInfo);
+    }
   };
 
   const handleCancel = () => {
     setState({
-        ...state,
-        editRowKey: "",
-      });
+      ...state,
+      editRowKey: "",
+    });
   };
+
+  const handleTableChange = (pagination, filter, sorter) => {
+    console.log(
+      "🚀 ~ file: usetable.js:145 ~ handleTableChange ~ sorter:",
+      sorter,
+      pagination
+    );
+    let sortOrder;
+    let sortBy;
+    let newData = [...dataSource];
+  
+    let desData = [];
+    if (sorter?.order !== undefined) {
+      if (sorter?.order === "ascend") {
+        sortOrder = "ascend";
+        sortBy = sorter?.columnKey;
+        let ascData = [];
+        console.log(
+          "🚀 ~ file: usetable.js:154 ~ handleTableChange ~ sortBy:",
+          sortBy
+        );
+        const newData = [...dataSource];
+        if (sortBy === "name") {
+          ascData = newData.sort((a, b) => a.name.length - b.name.length);
+          setState({
+            ...state,
+            rowData: ascData,
+          });
+        }
+        if (sortBy == "id") {
+          ascData = newData.sort((a, b) => a.id - b.id);
+          setState({
+            ...state,
+            rowData: ascData,
+          });
+        }
+        console.log("sortData", ascData, dataSource);
+        
+        dispatch(saveTableRows(rowReduxKey, [...ascData]));
+      }
+      if (sorter?.order === "descend") {
+        sortOrder = "descend";
+        sortBy = sorter?.columnKey;
+        console.log(
+          "🚀 ~ file: usetable.js:168 ~ handleTableChange ~ sortBy:",
+          sortBy
+        );
+        if (sortBy === "name") {
+          desData = dataSource.reverse(
+            (a, b) => a.name?.length - b.name.length
+          );
+          setState({
+            ...state,
+            rowData: desData,
+          });
+        }
+        if (sortBy === "id") {
+          desData = dataSource.reverse((a, b) => a.id - b.id);
+          setState({
+            ...state,
+            rowData: desData,
+          });
+        }
+        
+        dispatch(saveTableRows(rowReduxKey, [...desData]));
+      }
+    }
+    // dispatch(saveTableRows(rowReduxKey, [...dataSource]))
+    setState({
+      ...state,
+      body: {
+        ...body,
+        page: pagination.current,
+        per_page: pagination.pageSize,
+        total_entries: pagination.total,
+        sort_by: sortBy,
+        sort_order: sortOrder,
+      },
+    });
+  };
+  const handleSorting = (item, sortOrder) => {
+    console.log(
+      "🚀 ~ file: table.js:82 ~ handleSorting ~ item:",
+      item,
+      sortOrder
+    );
+  };
+
   return [
     {
       isListLoading,
@@ -142,6 +234,8 @@ const useTable = (props) => {
       handleEdit,
       handleSave,
       handleCancel,
+      handleSorting,
+      handleTableChange,
     },
   ];
 };
