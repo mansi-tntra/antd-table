@@ -12,9 +12,11 @@ function App() {
       <div className="App">
         {/* <DataTable hasActions hasDeleteAction/> */}
         <AntTable
+          hasDeleteAction
           getApiCall={getListing}
           rowReduxKey="tableRow"
           columnReduxKey="tableColumn"
+          pageSizeOptions={["10", "25", "50", "100"]}
         />
       </div>
     </Provider>

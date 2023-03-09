@@ -1,4 +1,13 @@
-import { Col, Space, Table, Typography, Popconfirm, Form, Input } from "antd";
+import {
+  Col,
+  Space,
+  Table,
+  Typography,
+  Popconfirm,
+  Form,
+  Input,
+  Button,
+} from "antd";
 import Column from "antd/es/table/Column";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -17,7 +26,7 @@ const editableCell = (props) => {
     children,
     ...restProps
   } = props;
-  const inputNode =  <Input />;
+  const inputNode = <Input />;
   return (
     <td {...restProps}>
       {editing ? (
@@ -43,7 +52,13 @@ const editableCell = (props) => {
 };
 const AntTable = (props) => {
   const [form] = Form.useForm();
-  const { getApiCall, rowReduxKey, columnReduxKey } = props;
+  const {
+    getApiCall,
+    rowReduxKey,
+    columnReduxKey,
+    hasDeleteAction,
+    pageSizeOptions,
+  } = props;
   const [
     {
       isListLoading,
@@ -51,12 +66,14 @@ const AntTable = (props) => {
       columnData,
       body,
       editRowKey,
+      rowSelection,
       isEditing,
       handleEdit,
       handleSave,
       handleCancel,
       handleSorting,
-      handleTableChange
+      handleTableChange,
+      handleDelete,
     },
   ] = useTable({
     form,
@@ -80,7 +97,7 @@ const AntTable = (props) => {
     console.log("mmmm", data);
     return data;
   };
- 
+
   const handle = (item) =>
     // console.log("item", item);
     item.map((item) => {
@@ -100,22 +117,44 @@ const AntTable = (props) => {
             title: item.title,
             editing: isEditing(record),
           })}
-          sorter={(item?.dataIndex === "id") || item?.dataIndex ==="name" ? true : false}
+          sorter={
+            item?.dataIndex === "id" || item?.dataIndex === "name"
+              ? true
+              : false
+          }
         />
       );
     });
 
-let component ={
-    body:{
-        cell : editableCell
+  let component = {
+    body: {
+      cell: editableCell,
     },
-}
+  };
 
   return (
     <Form form={form} component={false}>
-      <Table components={component} dataSource={dataSource}  onChange={handleTableChange}>
+      {hasDeleteAction && (
+        <Popconfirm title="confirm Cancel?" onConfirm={() => handleDelete()}>
+          <Button danger type="primary">
+            Delete
+          </Button>
+        </Popconfirm>
+      )}
+      <Table
+        rowKey="id"
+        rowSelection={rowSelection}
+        components={component}
+        dataSource={dataSource}
+        pagination={{
+          pageSizeOptions,
+          position: ["bottomRight"],
+          
+        }}
+        onChange={handleTableChange}
+      >
         {handle(mergeColumn())}
-      
+
         {
           <Column
             title="Actions"
@@ -126,10 +165,6 @@ let component ={
             visible={true}
             render={(_, record) => {
               const editing = isEditing(record);
-              console.log(
-                "🚀 ~ file: table.js:58 ~ AntTable ~ editing:",
-                editing
-              );
               return editing ? (
                 <span>
                   <Typography.Link

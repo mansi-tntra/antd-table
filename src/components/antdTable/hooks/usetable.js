@@ -15,8 +15,10 @@ const useTable = (props) => {
     columnData: [],
     body: {},
     editRowKey: "",
+    selectRowKeys: [],
+    selectedRows:[]
   });
-  const { rowData, columnData, body, editRowKey } = state;
+  const { rowData, columnData, body, editRowKey, selectRowKeys , selectedRows} = state;
   const [triggerList, setTriggerList] = useState(false);
 
   const { dataSource } = useSelector((state) => ({
@@ -144,7 +146,7 @@ const useTable = (props) => {
     );
     let sortOrder;
     let sortBy;
-    let newData = [...dataSource];
+  
   
     let desData = [];
     if (sorter?.order !== undefined) {
@@ -222,7 +224,32 @@ const useTable = (props) => {
       sortOrder
     );
   };
+const onSelectChange =(newSelectedRowKeys , selectedRows) => {
+  console.log("🚀 ~ file: usetable.js:228 ~ onSelectChange ~ selectedRows:", selectedRows, newSelectedRowKeys)
 
+  setState({
+    ...state,
+    selectRowKeys: newSelectedRowKeys,
+    selectedRows: selectedRows
+  })
+
+}
+  const rowSelection ={
+    selectRowKeys,
+    onChange: onSelectChange 
+  }
+  const handleDelete=()=>{
+    console.log("🚀 ~ file: usetable.js:228 ~ onSelectChange ~ selectedRows:", selectedRows[0]?.id, selectRowKeys)
+    const record =[...dataSource];
+    const DeleteData = record.filter((item)=> item?.id !== selectedRows[0]?.id );
+    console.log("🚀 ~ file: usetable.js:245 ~ handleDelete ~ DeleteData:", DeleteData)
+    setState({
+      ...state,
+      rowData: DeleteData,
+
+    })
+    dispatch(saveTableRows(rowReduxKey,[...DeleteData]))
+  }
   return [
     {
       isListLoading,
@@ -230,12 +257,14 @@ const useTable = (props) => {
       columnData,
       body,
       editRowKey,
+      rowSelection,
       isEditing,
       handleEdit,
       handleSave,
       handleCancel,
       handleSorting,
       handleTableChange,
+      handleDelete
     },
   ];
 };
