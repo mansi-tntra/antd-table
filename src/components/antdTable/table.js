@@ -7,6 +7,8 @@ import {
   Form,
   Input,
   Button,
+  Dropdown,
+  Checkbox,
 } from "antd";
 import Column from "antd/es/table/Column";
 import React from "react";
@@ -14,6 +16,7 @@ import { useDispatch, useSelector } from "react-redux";
 import useTable from "./hooks/usetable";
 import { isEmpty } from "loadsh";
 import { saveTableRows } from "../../redux/table/tableActions";
+import { EllipsisOutlined, EyeInvisibleOutlined } from "@ant-design/icons";
 
 const editableCell = (props) => {
   const {
@@ -58,6 +61,7 @@ const AntTable = (props) => {
     columnReduxKey,
     hasDeleteAction,
     pageSizeOptions,
+    hasHideShow,
   } = props;
   const [
     {
@@ -74,6 +78,7 @@ const AntTable = (props) => {
       handleSorting,
       handleTableChange,
       handleDelete,
+      handelHideShow,
     },
   ] = useTable({
     form,
@@ -92,7 +97,15 @@ const AntTable = (props) => {
   const mergeColumn = () => {
     const data = [];
     if (Array.isArray(column)) {
-      data.push(...column);
+      column.forEach((col) => {
+        if (col?.visibility === true) {
+          console.log("KKK", col);
+          data.push({
+            ...col,
+          });
+        }
+        
+      });
     }
     console.log("mmmm", data);
     return data;
@@ -108,6 +121,8 @@ const AntTable = (props) => {
           title={item?.title}
           dataIndex={item?.dataIndex}
           editable={item?.editable}
+          visibility={item?.visibility}
+          fixed={item?.fixed}
           render={(value) => {
             return <span> {String(value)}</span>;
           }}
@@ -131,7 +146,28 @@ const AntTable = (props) => {
       cell: editableCell,
     },
   };
-
+  const items = [
+    {
+      key: "1",
+      label: "Hide/show",
+      children: column?.map((col) => {
+        console.log("CCC", col);
+        return {
+          key: col.dataIndex,
+          name: col.name,
+          label: (
+            <Checkbox
+              onChange={(event) => handelHideShow(col, event.target.checked)}
+              checked={col.visibility}
+              disabled={col.fixed === true}
+            >
+              {col.title}
+            </Checkbox>
+          ),
+        };
+      }),
+    },
+  ];
   return (
     <Form form={form} component={false}>
       {hasDeleteAction && (
@@ -141,6 +177,15 @@ const AntTable = (props) => {
           </Button>
         </Popconfirm>
       )}
+      {hasHideShow && (
+        <Dropdown menu={{ items }} trigger={["click"]}>
+          <Button>
+            <span>
+              <EllipsisOutlined />
+            </span>
+          </Button>
+        </Dropdown>
+      )}
       <Table
         rowKey="id"
         rowSelection={rowSelection}
@@ -149,7 +194,6 @@ const AntTable = (props) => {
         pagination={{
           pageSizeOptions,
           position: ["bottomRight"],
-          
         }}
         onChange={handleTableChange}
       >

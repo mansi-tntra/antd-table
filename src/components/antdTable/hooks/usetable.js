@@ -16,15 +16,18 @@ const useTable = (props) => {
     body: {},
     editRowKey: "",
     selectRowKeys: [],
-    selectedRows:[]
+    selectedRows: [],
   });
-  const { rowData, columnData, body, editRowKey, selectRowKeys , selectedRows} = state;
+  const { rowData, columnData, body, editRowKey, selectRowKeys, selectedRows } =
+    state;
   const [triggerList, setTriggerList] = useState(false);
 
   const { dataSource } = useSelector((state) => ({
     dataSource: state?.table?.[rowReduxKey],
   }));
-
+ const { column } =useSelector((state)=>({
+  column:state?.table?.[columnReduxKey]
+ }))
   const dispatch = useDispatch();
 
   const isEditing = (record) => {
@@ -53,6 +56,9 @@ const useTable = (props) => {
         key: key,
         name: key,
         editable: true,
+        visibility: true,
+        fixed: false,
+        width: 80,
       });
       console.log("colArray", colArray);
     }
@@ -146,8 +152,7 @@ const useTable = (props) => {
     );
     let sortOrder;
     let sortBy;
-  
-  
+
     let desData = [];
     if (sorter?.order !== undefined) {
       if (sorter?.order === "ascend") {
@@ -174,7 +179,7 @@ const useTable = (props) => {
           });
         }
         console.log("sortData", ascData, dataSource);
-        
+
         dispatch(saveTableRows(rowReduxKey, [...ascData]));
       }
       if (sorter?.order === "descend") {
@@ -200,7 +205,7 @@ const useTable = (props) => {
             rowData: desData,
           });
         }
-        
+
         dispatch(saveTableRows(rowReduxKey, [...desData]));
       }
     }
@@ -224,32 +229,62 @@ const useTable = (props) => {
       sortOrder
     );
   };
-const onSelectChange =(newSelectedRowKeys , selectedRows) => {
-  console.log("🚀 ~ file: usetable.js:228 ~ onSelectChange ~ selectedRows:", selectedRows, newSelectedRowKeys)
+  const onSelectChange = (newSelectedRowKeys, selectedRows) => {
+    console.log(
+      "🚀 ~ file: usetable.js:228 ~ onSelectChange ~ selectedRows:",
+      selectedRows,
+      newSelectedRowKeys
+    );
 
-  setState({
-    ...state,
-    selectRowKeys: newSelectedRowKeys,
-    selectedRows: selectedRows
-  })
-
-}
-  const rowSelection ={
+    setState({
+      ...state,
+      selectRowKeys: newSelectedRowKeys,
+      selectedRows: selectedRows,
+    });
+  };
+  const rowSelection = {
     selectRowKeys,
-    onChange: onSelectChange 
-  }
-  const handleDelete=()=>{
-    console.log("🚀 ~ file: usetable.js:228 ~ onSelectChange ~ selectedRows:", selectedRows[0]?.id, selectRowKeys)
-    const record =[...dataSource];
-    const DeleteData = record.filter((item)=> item?.id !== selectedRows[0]?.id );
-    console.log("🚀 ~ file: usetable.js:245 ~ handleDelete ~ DeleteData:", DeleteData)
+    onChange: onSelectChange,
+  };
+  const handleDelete = () => {
+    console.log(
+      "🚀 ~ file: usetable.js:228 ~ onSelectChange ~ selectedRows:",
+      selectedRows[0]?.id,
+      selectRowKeys
+    );
+    const record = [...dataSource];
+    const DeleteData = record.filter(
+      (item) => item?.id !== selectedRows[0]?.id
+    );
+    console.log(
+      "🚀 ~ file: usetable.js:245 ~ handleDelete ~ DeleteData:",
+      DeleteData
+    );
     setState({
       ...state,
       rowData: DeleteData,
-
+    });
+    dispatch(saveTableRows(rowReduxKey, [...DeleteData]));
+  };
+  const handelHideShow = (data, event) => {
+    console.log("AAAA", data);
+    const filterData = column.map((element)=>{
+      console.log(
+      "EEE" , element
+      )
+      return{
+        ...element
+      }
     })
-    dispatch(saveTableRows(rowReduxKey,[...DeleteData]))
-  }
+    const findIndex = filterData.findIndex(
+      (element)=> element.name === data.name
+    )
+
+    filterData[findIndex].visibility = event;
+    dispatch(saveTableColumn(columnReduxKey , [...filterData]))
+    console.log("🚀 ~ file: usetable.js:277 ~ handelHideShow ~ findIndex:", findIndex)
+    console.log("🚀 ~ file: usetable.js:274 ~ filterData ~ filterData:", filterData[findIndex])
+  };
   return [
     {
       isListLoading,
@@ -264,7 +299,8 @@ const onSelectChange =(newSelectedRowKeys , selectedRows) => {
       handleCancel,
       handleSorting,
       handleTableChange,
-      handleDelete
+      handleDelete,
+      handelHideShow,
     },
   ];
 };

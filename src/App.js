@@ -12,6 +12,7 @@ function App() {
       <div className="App">
         {/* <DataTable hasActions hasDeleteAction/> */}
         <AntTable
+          hasHideShow
           hasDeleteAction
           getApiCall={getListing}
           rowReduxKey="tableRow"
