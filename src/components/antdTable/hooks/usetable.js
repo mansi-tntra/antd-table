@@ -1,4 +1,6 @@
-import { message } from "antd";
+import { EllipsisOutlined, FilterOutlined } from "@ant-design/icons";
+import { Button, Checkbox, Dropdown, message } from "antd";
+import Column from "antd/es/table/Column";
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -8,7 +10,7 @@ import {
 import useFetchData from "../../hooks/useFetchData";
 
 const useTable = (props) => {
-  const { form, getApiCall, rowReduxKey, columnReduxKey } = props;
+  const { form, getApiCall, rowReduxKey, columnReduxKey, hasHideShow } = props;
 
   const [state, setState] = useState({
     rowData: [],
@@ -25,20 +27,97 @@ const useTable = (props) => {
   const { dataSource } = useSelector((state) => ({
     dataSource: state?.table?.[rowReduxKey],
   }));
- const { column } =useSelector((state)=>({
-  column:state?.table?.[columnReduxKey]
- }))
+  const { column } = useSelector((state) => ({
+    column: state?.table?.[columnReduxKey],
+  }));
+  console.log(
+    "🚀 ~ file: usetable.js:31 ~ const{column}=useSelector ~ column:",
+    column
+  );
   const dispatch = useDispatch();
-
+  const [hideShowData, setHideShowData] = useState(column);
+  console.log("🚀 ~ file: usetable.js:39 ~ useTable ~ hideShowData:", hideShowData)
   const isEditing = (record) => {
     return record.id === editRowKey;
   };
+  const items = [
+    {
+      key: "1",
+      label: "Hide/show",
+      children: hideShowData?.map((col) => {
+        console.log("CCC", col);
+        return {
+          key: col.dataIndex,
+          name: col.name,
+          label: (
+            <Checkbox
+              onChange={(event) => handelHideShow(col, event.target.checked)}
+              checked={col?.visibility}
+              disabled={col.fixed === true}
+            >
+              {col.title}
+            </Checkbox>
+          ),
+        };
+      }),
+    },
+  ];
+  const handelHideShow = (data, event) => {
+    console.log("AAAA", data);
+    const filterData = hideShowData.map((element) => {
+      console.log("EEE", element);
+      return {
+        ...element,
+        ...getColumnProps(element?.dataIndex),
+      };
+    });
+    const findIndex = filterData.findIndex(
+      (element) => element.name === data.name
+    );
+
+    filterData[findIndex].visibility = event;
+    setHideShowData(filterData);
+    dispatch(saveTableColumn(columnReduxKey, [...filterData]));
+    // setTriggerList(true)
+    console.log(
+      "🚀 ~ file: usetable.js:277 ~ handelHideShow ~ findIndex:",
+      findIndex
+    );
+    console.log(
+      "🚀 ~ file: usetable.js:274 ~ filterData ~ filterData:",
+      filterData
+    );
+  };
+
+  const getColumnProps = (dataIndex) => ({
+    filterDropdown: ({}) => (
+      <div
+        style={{
+          padding: 8,
+        }}
+      >
+        {hasHideShow && (
+          <Dropdown menu={{ items }} trigger={["click"]}>
+            <Button>
+              <span>
+                <EllipsisOutlined />
+              </span>
+            </Button>
+          </Dropdown>
+        )}
+      </div>
+    ),
+    filterIcon: () => <FilterOutlined />,
+    onFilter: (value, record) =>
+      record[dataIndex].toString().includes(value.toLowerCase()),
+    onFilterDropdownOpenChange: (visible) => {
+      console.log("VVVV", visible);
+    },
+  });
   const listSuccess = (data) => {
     console.log("🚀 ~ file: usetable.js:17 ~ listSuccess ~ data:", data);
     const modifiedData = data.map(({ body, ...item }) => ({
       ...item,
-      // id: id,
-      // message: body,
     }));
     setState({
       ...state,
@@ -59,16 +138,17 @@ const useTable = (props) => {
         visibility: true,
         fixed: false,
         width: 80,
+        ...getColumnProps(key),
       });
       console.log("colArray", colArray);
     }
-    setTriggerList(false);
     dispatch(saveTableRows(rowReduxKey, [...modifiedData]));
     dispatch(saveTableColumn(columnReduxKey, [...colArray]));
     setState({
       ...state,
       columnData: [...colArray],
     });
+    setTriggerList(false);
   };
   const listError = () => {};
 
@@ -266,25 +346,7 @@ const useTable = (props) => {
     });
     dispatch(saveTableRows(rowReduxKey, [...DeleteData]));
   };
-  const handelHideShow = (data, event) => {
-    console.log("AAAA", data);
-    const filterData = column.map((element)=>{
-      console.log(
-      "EEE" , element
-      )
-      return{
-        ...element
-      }
-    })
-    const findIndex = filterData.findIndex(
-      (element)=> element.name === data.name
-    )
 
-    filterData[findIndex].visibility = event;
-    dispatch(saveTableColumn(columnReduxKey , [...filterData]))
-    console.log("🚀 ~ file: usetable.js:277 ~ handelHideShow ~ findIndex:", findIndex)
-    console.log("🚀 ~ file: usetable.js:274 ~ filterData ~ filterData:", filterData[findIndex])
-  };
   return [
     {
       isListLoading,

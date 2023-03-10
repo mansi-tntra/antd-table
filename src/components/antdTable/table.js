@@ -85,6 +85,7 @@ const AntTable = (props) => {
     getApiCall,
     columnReduxKey,
     rowReduxKey,
+    hasHideShow,
   });
 
   const { column } = useSelector((state) => ({
@@ -94,6 +95,7 @@ const AntTable = (props) => {
   const { dataSource } = useSelector((state) => ({
     dataSource: state?.table?.[rowReduxKey],
   }));
+  const dispatch = useDispatch()
   const mergeColumn = () => {
     const data = [];
     if (Array.isArray(column)) {
@@ -104,7 +106,6 @@ const AntTable = (props) => {
             ...col,
           });
         }
-        
       });
     }
     console.log("mmmm", data);
@@ -137,6 +138,10 @@ const AntTable = (props) => {
               ? true
               : false
           }
+          filterDropdown={item?.filterDropdown}
+          filterIcon={item?.filterIcon}
+          onFilter={item?.onFilter}
+          onFilterDropdownOpenChange={item?.onFilterDropdownOpenChange}
         />
       );
     });
