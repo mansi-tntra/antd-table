@@ -7,6 +7,7 @@ import {
   saveTableColumn,
   saveTableRows,
 } from "../../../redux/table/tableActions";
+import CustomDropdown from "../../CustomDropdown/dropDown";
 import useFetchData from "../../hooks/useFetchData";
 
 const useTable = (props) => {
@@ -36,77 +37,86 @@ const useTable = (props) => {
   );
   const dispatch = useDispatch();
   const [hideShowData, setHideShowData] = useState(column);
-  console.log("🚀 ~ file: usetable.js:39 ~ useTable ~ hideShowData:", hideShowData)
+  console.log(
+    "🚀 ~ file: usetable.js:39 ~ useTable ~ hideShowData:",
+    hideShowData
+  );
   const isEditing = (record) => {
     return record.id === editRowKey;
   };
-  const items = [
-    {
-      key: "1",
-      label: "Hide/show",
-      children: hideShowData?.map((col) => {
-        console.log("CCC", col);
-        return {
-          key: col.dataIndex,
-          name: col.name,
-          label: (
-            <Checkbox
-              onChange={(event) => handelHideShow(col, event.target.checked)}
-              checked={col?.visibility}
-              disabled={col.fixed === true}
-            >
-              {col.title}
-            </Checkbox>
-          ),
-        };
-      }),
-    },
-  ];
-  const handelHideShow = (data, event) => {
-    console.log("AAAA", data);
-    const filterData = hideShowData.map((element) => {
-      console.log("EEE", element);
-      return {
-        ...element,
-        ...getColumnProps(element?.dataIndex),
-      };
-    });
-    const findIndex = filterData.findIndex(
-      (element) => element.name === data.name
-    );
-
-    filterData[findIndex].visibility = event;
-    setHideShowData(filterData);
-    dispatch(saveTableColumn(columnReduxKey, [...filterData]));
-    // setTriggerList(true)
-    console.log(
-      "🚀 ~ file: usetable.js:277 ~ handelHideShow ~ findIndex:",
-      findIndex
-    );
-    console.log(
-      "🚀 ~ file: usetable.js:274 ~ filterData ~ filterData:",
-      filterData
-    );
-  };
 
   const getColumnProps = (dataIndex) => ({
-    filterDropdown: ({}) => (
-      <div
-        style={{
-          padding: 8,
-        }}
-      >
-        {hasHideShow && (
-          <Dropdown menu={{ items }} trigger={["click"]}>
-            <Button>
-              <span>
-                <EllipsisOutlined />
-              </span>
-            </Button>
-          </Dropdown>
-        )}
-      </div>
-    ),
+    filterDropdown: ({}) => {
+      const items = [
+        {
+          key: "1",
+          label: "Hide/show",
+          children: hideShowData?.map((col) => {
+            console.log("CCC", col);
+            return {
+              key: col.dataIndex,
+              name: col.name,
+              label: (
+                <Checkbox
+                  onChange={(event) =>
+                    handelHideShow(col, event.target.checked)
+                  }
+                  checked={col?.visibility}
+                  disabled={col.fixed === true}
+                >
+                  {col.title}
+                </Checkbox>
+              ),
+            };
+          }),
+        },
+      ];
+      const handelHideShow = (data, event) => {
+        console.log("AAAA", data);
+        const filterData = column.map((element) => {
+          console.log("EEE", element);
+          return {
+            ...element,
+            ...getColumnProps(element?.dataIndex),
+          };
+        });
+        const findIndex = filterData.findIndex(
+          (element) => element.name === data.name
+        );
+
+        filterData[findIndex].visibility = false;
+        setState({
+          ...state,
+          columnData: [...filterData],
+        });
+          setHideShowData(filterData)
+        console.log(
+          "🚀 ~ file: usetable.js:277 ~ handelHideShow ~ findIndex:",
+          findIndex
+        );
+        console.log(
+          "🚀 ~ file: usetable.js:274 ~ filterData ~ filterData:",
+          filterData
+        );
+      };
+      return (
+        <div
+          style={{
+            padding: 8,
+          }}
+        >
+          {hasHideShow && (
+            <CustomDropdown
+              items={items}
+              trigger={["click"]}
+              className="moreOptions"
+              triggerSubMenuAction="click"
+              dropdownIndicator={<EllipsisOutlined />}
+            />
+          )}
+        </div>
+      );
+    },
     filterIcon: () => <FilterOutlined />,
     onFilter: (value, record) =>
       record[dataIndex].toString().includes(value.toLowerCase()),
@@ -138,7 +148,6 @@ const useTable = (props) => {
         visibility: true,
         fixed: false,
         width: 80,
-        ...getColumnProps(key),
       });
       console.log("colArray", colArray);
     }
@@ -362,7 +371,6 @@ const useTable = (props) => {
       handleSorting,
       handleTableChange,
       handleDelete,
-      handelHideShow,
     },
   ];
 };

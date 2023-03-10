@@ -15,8 +15,9 @@ import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import useTable from "./hooks/usetable";
 import { isEmpty } from "loadsh";
-import { saveTableRows } from "../../redux/table/tableActions";
-import { EllipsisOutlined, EyeInvisibleOutlined } from "@ant-design/icons";
+import { saveTableColumn, saveTableRows } from "../../redux/table/tableActions";
+import { EllipsisOutlined, EyeInvisibleOutlined, FilterOutlined } from "@ant-design/icons";
+import CustomDropdown from "../CustomDropdown/dropDown";
 
 const editableCell = (props) => {
   const {
@@ -78,7 +79,7 @@ const AntTable = (props) => {
       handleSorting,
       handleTableChange,
       handleDelete,
-      handelHideShow,
+      // handelHideShow,
     },
   ] = useTable({
     form,
@@ -95,7 +96,73 @@ const AntTable = (props) => {
   const { dataSource } = useSelector((state) => ({
     dataSource: state?.table?.[rowReduxKey],
   }));
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
+  const handelHideShow = (data, event) => {
+    console.log("AAAA", data);
+    const filterData = column.map((element) => {
+      console.log("EEE", element);
+      return {
+        ...element,
+      };
+    });
+    const findIndex = filterData.findIndex(
+      (element) => element.name === data.name
+    );
+
+    filterData[findIndex].visibility = false;
+    dispatch(saveTableColumn(columnReduxKey, [...filterData]));
+
+    console.log(
+      "🚀 ~ file: usetable.js:277 ~ handelHideShow ~ findIndex:",
+      findIndex
+    );
+    console.log(
+      "🚀 ~ file: usetable.js:274 ~ filterData ~ filterData:",
+      filterData
+    );
+  };
+  const items = [
+    {
+      key: "1",
+      label: "Hide/show",
+      children: column?.map((col) => {
+        console.log("CCC", col);
+        return {
+          key: col.dataIndex,
+          name: col.name,
+          label: (
+            <Checkbox
+              onChange={(event) => handelHideShow(col, event.target.checked)}
+              checked={col?.visibility}
+              disabled={col.fixed === true}
+            >
+              {col.title}
+            </Checkbox>
+          ),
+        };
+      }),
+    },
+  ];
+  const getColumnProps = (dataIndex) => ({
+    filterDropdown:({})=>(
+      <div
+      style={{
+        padding: 8,
+      }}
+    >
+      {hasHideShow && (
+        <CustomDropdown
+          items={items}
+          trigger={["click"]}
+          className="moreOptions"
+          triggerSubMenuAction="click"
+          dropdownIndicator={<EllipsisOutlined />}
+        />
+      )}
+    </div>
+    ),
+    filterIcon: () => <FilterOutlined />,
+  });
   const mergeColumn = () => {
     const data = [];
     if (Array.isArray(column)) {
@@ -107,13 +174,14 @@ const AntTable = (props) => {
           });
         }
       });
+      // dispatch(saveTableColumn(columnReduxKey, [data]));
     }
+
     console.log("mmmm", data);
     return data;
   };
 
   const handle = (item) =>
-    // console.log("item", item);
     item.map((item) => {
       console.log("item", item);
       return (
@@ -138,10 +206,7 @@ const AntTable = (props) => {
               ? true
               : false
           }
-          filterDropdown={item?.filterDropdown}
-          filterIcon={item?.filterIcon}
-          onFilter={item?.onFilter}
-          onFilterDropdownOpenChange={item?.onFilterDropdownOpenChange}
+          {...getColumnProps(item?.dataIndex)}
         />
       );
     });
@@ -151,28 +216,28 @@ const AntTable = (props) => {
       cell: editableCell,
     },
   };
-  const items = [
-    {
-      key: "1",
-      label: "Hide/show",
-      children: column?.map((col) => {
-        console.log("CCC", col);
-        return {
-          key: col.dataIndex,
-          name: col.name,
-          label: (
-            <Checkbox
-              onChange={(event) => handelHideShow(col, event.target.checked)}
-              checked={col.visibility}
-              disabled={col.fixed === true}
-            >
-              {col.title}
-            </Checkbox>
-          ),
-        };
-      }),
-    },
-  ];
+  // const items = [
+  //   {
+  //     key: "1",
+  //     label: "Hide/show",
+  //     children: column?.map((col) => {
+  //       console.log("CCC", col);
+  //       return {
+  //         key: col.dataIndex,
+  //         name: col.name,
+  //         label: (
+  //           <Checkbox
+  //             onChange={(event) => handelHideShow(col, event.target.checked)}
+  //             checked={col.visibility}
+  //             disabled={col.fixed === true}
+  //           >
+  //             {col.title}
+  //           </Checkbox>
+  //         ),
+  //       };
+  //     }),
+  //   },
+  // ];
   return (
     <Form form={form} component={false}>
       {hasDeleteAction && (
@@ -182,7 +247,7 @@ const AntTable = (props) => {
           </Button>
         </Popconfirm>
       )}
-      {hasHideShow && (
+      {/* {hasHideShow && (
         <Dropdown menu={{ items }} trigger={["click"]}>
           <Button>
             <span>
@@ -190,7 +255,7 @@ const AntTable = (props) => {
             </span>
           </Button>
         </Dropdown>
-      )}
+      )} */}
       <Table
         rowKey="id"
         rowSelection={rowSelection}
