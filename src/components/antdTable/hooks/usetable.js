@@ -125,7 +125,9 @@ const useTable = (props) => {
     },
   });
   const listSuccess = (data) => {
+    setTriggerList(true)
     console.log("🚀 ~ file: usetable.js:17 ~ listSuccess ~ data:", data);
+    // setTriggerList(true)
     const modifiedData = data.map(({ body, ...item }) => ({
       ...item,
     }));
@@ -161,14 +163,7 @@ const useTable = (props) => {
   };
   const listError = () => {};
 
-  const [{ isLoading: isListLoading }] = useFetchData({
-    apiFunction: getApiCall,
-    apiParams: body,
-    apiCallCondition: triggerList,
-    dependencyArray: [triggerList],
-    successCallBack: listSuccess,
-    errorCallBack: listError,
-  });
+  
 
   const handleEdit = (record) => {
     form.setFieldsValue({
@@ -355,6 +350,15 @@ const useTable = (props) => {
     });
     dispatch(saveTableRows(rowReduxKey, [...DeleteData]));
   };
+
+  const [{ isLoading: isListLoading }] = useFetchData({
+    apiFunction: getApiCall,
+    apiParams: body,
+    apiCallCondition: [triggerList],
+    dependencyArray: [triggerList],
+    successCallBack: listSuccess,
+    errorCallBack: listError,
+  });
 
   return [
     {
