@@ -237,6 +237,7 @@ const AntTable = (props) => {
           visibility={item?.visibility}
           width={item?.width}
           fixed={item?.fixed}
+          ellipsis={{ showTitle: false }}
           resizable={item?.resizable}
           render={(value) => {
             return <span> {String(value)}</span>;
@@ -308,15 +309,16 @@ const AntTable = (props) => {
         components={components}
         dataSource={dataSource}
         
-        // bordered={true}
+        bordered={true}
         pagination={{
           pageSizeOptions,
           position: ["bottomRight"],
         }}
+        size="small"
         onChange={handleTableChange}
         scroll={{
           x: "calc(100vh - 250px)",
-          y: 500,
+          y: "calc(100vh - 250px)",
         }}
       >
         {handle(mergeColumn())}

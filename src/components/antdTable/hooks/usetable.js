@@ -149,7 +149,7 @@ const useTable = (props) => {
         editable: true,
         visibility: true,
         fixed: false,
-        width: 100,
+        width: 200,
         resizable: true
       });
       console.log("colArray", colArray);
