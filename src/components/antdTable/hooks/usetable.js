@@ -149,7 +149,8 @@ const useTable = (props) => {
         editable: true,
         visibility: true,
         fixed: false,
-        width: 80,
+        width: 100,
+        resizable: true
       });
       console.log("colArray", colArray);
     }
@@ -350,7 +351,23 @@ const useTable = (props) => {
     });
     dispatch(saveTableRows(rowReduxKey, [...DeleteData]));
   };
+const handleResize =(index)=>(e,{size})=>{
 
+const columnResize = [...column];
+columnResize[index]= {
+ 
+  ...columnResize[index],
+  width: size.width
+}
+console.log("🚀 ~ file: usetable.js:357 ~ handleResize ~ columnResize:", [...columnResize])
+setState({
+  ...state ,
+  columnData: [...columnResize]
+})
+dispatch(saveTableColumn(columnReduxKey , [...columnResize]))
+
+
+}
   const [{ isLoading: isListLoading }] = useFetchData({
     apiFunction: getApiCall,
     apiParams: body,
@@ -375,6 +392,7 @@ const useTable = (props) => {
       handleSorting,
       handleTableChange,
       handleDelete,
+      handleResize
     },
   ];
 };

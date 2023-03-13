@@ -16,9 +16,14 @@ import { useDispatch, useSelector } from "react-redux";
 import useTable from "./hooks/usetable";
 import { isEmpty } from "loadsh";
 import { saveTableColumn, saveTableRows } from "../../redux/table/tableActions";
-import { EllipsisOutlined, EyeInvisibleOutlined, FilterOutlined } from "@ant-design/icons";
+import "./table.css";
+import {
+  EllipsisOutlined,
+  EyeInvisibleOutlined,
+  FilterOutlined,
+} from "@ant-design/icons";
 import CustomDropdown from "../CustomDropdown/dropDown";
-
+import { Resizable } from "react-resizable";
 const editableCell = (props) => {
   const {
     editing,
@@ -55,7 +60,32 @@ const editableCell = (props) => {
   );
 };
 
+const ResizableTitle = (props) => {
+  const { onResize, width, ...restProps } = props;
+  console.log("🚀 ~ file: table.js:65 ~ ResizableTitle ~ width:", width);
+  if (!width) {
+    return <th {...restProps} />;
+  }
 
+  return (
+    <Resizable
+      width={width}
+      height={0}
+      handle={
+        <span
+          className="react-resizable-handle"
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
+        />
+      }
+      onResize={onResize}
+      draggableOpts={{ enableUserSelectHack: false }}
+    >
+      <th {...restProps} />
+    </Resizable>
+  );
+};
 const AntTable = (props) => {
   const [form] = Form.useForm();
   const {
@@ -65,6 +95,7 @@ const AntTable = (props) => {
     hasDeleteAction,
     pageSizeOptions,
     hasHideShow,
+    scrollX,
   } = props;
   const [
     {
@@ -81,6 +112,7 @@ const AntTable = (props) => {
       handleSorting,
       handleTableChange,
       handleDelete,
+      handleResize,
       // handelHideShow,
     },
   ] = useTable({
@@ -123,6 +155,16 @@ const AntTable = (props) => {
       filterData
     );
   };
+
+  let components = {
+    header: {
+      cell: ResizableTitle,
+    },
+    body: {
+      cell: editableCell,
+    },
+  };
+
   const items = [
     {
       key: "1",
@@ -146,22 +188,22 @@ const AntTable = (props) => {
     },
   ];
   const getColumnProps = (dataIndex) => ({
-    filterDropdown:({})=>(
+    filterDropdown: ({}) => (
       <div
-      style={{
-        padding: 8,
-      }}
-    >
-      {hasHideShow && (
-        <CustomDropdown
-          items={items}
-          trigger={["click"]}
-          className="moreOptions"
-          triggerSubMenuAction="click"
-          dropdownIndicator={<EllipsisOutlined />}
-        />
-      )}
-    </div>
+        style={{
+          padding: 8,
+        }}
+      >
+        {hasHideShow && (
+          <CustomDropdown
+            items={items}
+            trigger={["click"]}
+            className="moreOptions"
+            triggerSubMenuAction="click"
+            dropdownIndicator={<EllipsisOutlined />}
+          />
+        )}
+      </div>
     ),
     filterIcon: () => <FilterOutlined />,
   });
@@ -184,7 +226,7 @@ const AntTable = (props) => {
   };
 
   const handle = (item) =>
-    item.map((item) => {
+    item.map((item, index) => {
       console.log("item", item);
       return (
         <Column
@@ -193,15 +235,22 @@ const AntTable = (props) => {
           dataIndex={item?.dataIndex}
           editable={item?.editable}
           visibility={item?.visibility}
+          width={item?.width}
           fixed={item?.fixed}
+          resizable={item?.resizable}
           render={(value) => {
             return <span> {String(value)}</span>;
           }}
+          
           onCell={(record) => ({
             record,
             dataIndex: item.dataIndex,
             title: item.title,
             editing: isEditing(record),
+          })}
+          onHeaderCell={(col) => ({
+            width: col.width,
+            onResize: handleResize(index),
           })}
           sorter={
             item?.dataIndex === "id" || item?.dataIndex === "name"
@@ -213,11 +262,6 @@ const AntTable = (props) => {
       );
     });
 
-  let component = {
-    body: {
-      cell: editableCell,
-    },
-  };
   // const items = [
   //   {
   //     key: "1",
@@ -261,13 +305,19 @@ const AntTable = (props) => {
       <Table
         rowKey="id"
         rowSelection={rowSelection}
-        components={component}
+        components={components}
         dataSource={dataSource}
+        
+        // bordered={true}
         pagination={{
           pageSizeOptions,
           position: ["bottomRight"],
         }}
         onChange={handleTableChange}
+        scroll={{
+          x: "calc(100vh - 250px)",
+          y: 500,
+        }}
       >
         {handle(mergeColumn())}
 
