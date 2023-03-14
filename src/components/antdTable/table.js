@@ -294,15 +294,6 @@ const AntTable = (props) => {
           </Button>
         </Popconfirm>
       )}
-      {/* {hasHideShow && (
-        <Dropdown menu={{ items }} trigger={["click"]}>
-          <Button>
-            <span>
-              <EllipsisOutlined />
-            </span>
-          </Button>
-        </Dropdown>
-      )} */}
       <Table
         rowKey="id"
         rowSelection={rowSelection}
@@ -317,8 +308,8 @@ const AntTable = (props) => {
         size="small"
         onChange={handleTableChange}
         scroll={{
-          x: "calc(100vh - 250px)",
-          y: "calc(100vh - 250px)",
+          x: "max-content",
+          y: "calc(100vh - 250px)", //element can be scrolled vertically up to a maximum of 100% viewport height minus 250 pixels
         }}
       >
         {handle(mergeColumn())}
