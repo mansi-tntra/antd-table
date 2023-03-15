@@ -143,7 +143,7 @@ const AntTable = (props) => {
       (element) => element.name === data.name
     );
 
-    filterData[findIndex].visibility = false;
+    filterData[findIndex].visibility = event;
     dispatch(saveTableColumn(columnReduxKey, [...filterData]));
 
     console.log(

@@ -18,7 +18,7 @@ const CustomDropdown = (props) => {
     <Dropdown
       className={className}
       disabled={disabled}
-      menu={{ items, triggerSubMenuAction}}
+      menu={{ items, triggerSubMenuAction ,onClick : (e) => e.stopPropagation() }}
       placement={placement}
       trigger={trigger}
       autoFocus={true}
